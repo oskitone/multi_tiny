@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "multi_tiny")
-		(date "2025-03-07")
+		(date "2025-03-09")
 		(company "tommy@oskitone.com")
 		(comment 1 "ICSP to 3x ATtiny85 adapter")
 	)
