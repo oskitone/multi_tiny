@@ -69,6 +69,8 @@
 #ifndef ARDUINO_HOODLOADER2
 
 #define RESET 10 // Use pin 10 to reset the target rather than SS
+
+// TODO: ditch?
 #define LED_HB 9
 #define LED_ERR 8
 #define LED_PMODE 7
@@ -220,7 +222,7 @@ static BitBangedSPI SPI;
 
 #endif
 
-void setup() {
+void setupArduinoISP() {
   SERIAL.begin(BAUDRATE);
 
   pinMode(LED_PMODE, OUTPUT);
@@ -285,7 +287,7 @@ void reset_target(bool reset) {
                    : LOW);
 }
 
-void loop(void) {
+void loopArduinoISP(void) {
   // is pmode active?
   if (pmode) {
     digitalWrite(LED_PMODE, HIGH);
