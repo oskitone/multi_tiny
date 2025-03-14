@@ -22,8 +22,8 @@
 // using an Uno. (On an Uno this is not needed).
 //
 // Alternatively you can use any other digital pin by configuring
-// software ('BitBanged') SPI and having appropriate defines for ARDUINOISP_PIN_MOSI,
-// ARDUINOISP_PIN_MISO and ARDUINOISP_PIN_SCK.
+// software ('BitBanged') SPI and having appropriate defines for
+// ARDUINOISP_PIN_MOSI, ARDUINOISP_PIN_MISO and ARDUINOISP_PIN_SCK.
 //
 // IMPORTANT: When using an Arduino that is not 5V tolerant (Due, Zero, ...) as
 // the programmer, make sure to not expose any of the programmer's pins to 5V.
@@ -32,13 +32,12 @@
 //
 // Put an LED (with resistor) on the following pins:
 // 9: Heartbeat   - shows the programmer is running
-// 8: Error       - Lights up if something goes wrong (use red if that makes sense)
-// 7: Programming - In communication with the target
+// 8: Error       - Lights up if something goes wrong (use red if that makes
+// sense) 7: Programming - In communication with the target
 //
 
 #include "Arduino.h"
 #undef SERIAL
-
 
 #define PROG_FLICKER true
 
@@ -51,7 +50,6 @@
 // A clock slow enough for an ATtiny85 @ 1 MHz, is a reasonable default:
 
 #define SPI_CLOCK (1000000 / 6)
-
 
 // Select hardware or software SPI, depending on SPI clock.
 // Currently only for AVR, for other architectures (Due, Zero,...), hardware SPI
@@ -70,7 +68,7 @@
 // The standard pin configuration.
 #ifndef ARDUINO_HOODLOADER2
 
-#define RESET 10  // Use pin 10 to reset the target rather than SS
+#define RESET 10 // Use pin 10 to reset the target rather than SS
 #define LED_HB 9
 #define LED_ERR 8
 #define LED_PMODE 7
@@ -113,22 +111,23 @@
 #endif
 
 // Force bitbanged SPI if not using the hardware SPI pins:
-#if (ARDUINOISP_PIN_MISO != MISO) || (ARDUINOISP_PIN_MOSI != MOSI) || (ARDUINOISP_PIN_SCK != SCK)
+#if (ARDUINOISP_PIN_MISO != MISO) || (ARDUINOISP_PIN_MOSI != MOSI) ||          \
+    (ARDUINOISP_PIN_SCK != SCK)
 #undef USE_HARDWARE_SPI
 #endif
 
-
 // Configure the serial port to use.
 //
-// Prefer the USB virtual serial port (aka. native USB port), if the Arduino has one:
+// Prefer the USB virtual serial port (aka. native USB port), if the Arduino has
+// one:
 //   - it does not autoreset (except for the magic baud rate of 1200).
 //   - it is more reliable because of USB handshaking.
 //
 // Leonardo and similar have an USB virtual serial port: 'Serial'.
 // Due and Zero have an USB virtual serial port: 'SerialUSB'.
 //
-// On the Due and Zero, 'Serial' can be used too, provided you disable autoreset.
-// To use 'Serial': #define SERIAL Serial
+// On the Due and Zero, 'Serial' can be used too, provided you disable
+// autoreset. To use 'Serial': #define SERIAL Serial
 
 #ifdef SERIAL_PORT_USBVIRTUAL
 #define SERIAL SERIAL_PORT_USBVIRTUAL
@@ -136,13 +135,11 @@
 #define SERIAL Serial
 #endif
 
-
 // Configure the baud rate:
 
 #define BAUDRATE 19200
 // #define BAUDRATE	115200
 // #define BAUDRATE	1000000
-
 
 #define HWVER 2
 #define SWMAJ 1
@@ -154,7 +151,7 @@
 #define STK_UNKNOWN 0x12
 #define STK_INSYNC 0x14
 #define STK_NOSYNC 0x15
-#define CRC_EOP 0x20  //ok it is a space...
+#define CRC_EOP 0x20 // ok it is a space...
 
 void pulse(int pin, int times);
 
@@ -164,24 +161,24 @@ void pulse(int pin, int times);
 
 #define SPI_MODE0 0x00
 
-#if !defined(ARDUINO_API_VERSION) || ARDUINO_API_VERSION != 10001  // A SPISettings class is declared by ArduinoCore-API 1.0.1
+#if !defined(ARDUINO_API_VERSION) ||                                           \
+    ARDUINO_API_VERSION !=                                                     \
+        10001 // A SPISettings class is declared by ArduinoCore-API 1.0.1
 class SPISettings {
 public:
   // clock is in Hz
   SPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode)
-    : clockFreq(clock) {
+      : clockFreq(clock) {
     (void)bitOrder;
     (void)dataMode;
   };
 
-  uint32_t getClockFreq() const {
-    return clockFreq;
-  }
+  uint32_t getClockFreq() const { return clockFreq; }
 
 private:
   uint32_t clockFreq;
 };
-#endif                                                             // !defined(ARDUINO_API_VERSION)
+#endif        // !defined(ARDUINO_API_VERSION)
 
 class BitBangedSPI {
 public:
@@ -194,7 +191,8 @@ public:
   }
 
   void beginTransaction(SPISettings settings) {
-    pulseWidth = (500000 + settings.getClockFreq() - 1) / settings.getClockFreq();
+    pulseWidth =
+        (500000 + settings.getClockFreq() - 1) / settings.getClockFreq();
     if (pulseWidth == 0) {
       pulseWidth = 1;
     }
@@ -208,14 +206,14 @@ public:
       digitalWrite(ARDUINOISP_PIN_SCK, HIGH);
       delayMicroseconds(pulseWidth);
       b = (b << 1) | digitalRead(ARDUINOISP_PIN_MISO);
-      digitalWrite(ARDUINOISP_PIN_SCK, LOW);  // slow pulse
+      digitalWrite(ARDUINOISP_PIN_SCK, LOW); // slow pulse
       delayMicroseconds(pulseWidth);
     }
     return b;
   }
 
 private:
-  unsigned long pulseWidth;  // in microseconds
+  unsigned long pulseWidth; // in microseconds
 };
 
 static BitBangedSPI SPI;
@@ -237,7 +235,7 @@ int ISPError = 0;
 int pmode = 0;
 // address for reading and writing, set by 'U' command
 unsigned int here;
-uint8_t buff[256];  // global block storage
+uint8_t buff[256]; // global block storage
 
 #define beget16(addr) (*addr * 256 + *(addr + 1))
 typedef struct param {
@@ -281,7 +279,10 @@ void heartbeat() {
 static bool rst_active_high;
 
 void reset_target(bool reset) {
-  digitalWrite(RESET, ((reset && rst_active_high) || (!reset && !rst_active_high)) ? HIGH : LOW);
+  digitalWrite(RESET,
+               ((reset && rst_active_high) || (!reset && !rst_active_high))
+                   ? HIGH
+                   : LOW);
 }
 
 void loop(void) {
@@ -362,20 +363,20 @@ void breply(uint8_t b) {
 
 void get_version(uint8_t c) {
   switch (c) {
-    case 0x80:
-      breply(HWVER);
-      break;
-    case 0x81:
-      breply(SWMAJ);
-      break;
-    case 0x82:
-      breply(SWMIN);
-      break;
-    case 0x93:
-      breply('S');  // serial programmer
-      break;
-    default:
-      breply(0);
+  case 0x80:
+    breply(HWVER);
+    break;
+  case 0x81:
+    breply(SWMAJ);
+    break;
+  case 0x82:
+    breply(SWMIN);
+    break;
+  case 0x93:
+    breply('S'); // serial programmer
+    break;
+  default:
+    breply(0);
   }
 }
 
@@ -397,10 +398,8 @@ void set_parameters() {
   param.eepromsize = beget16(&buff[14]);
 
   // 32 bits flashsize (big endian)
-  param.flashsize = buff[16] * 0x01000000
-                    + buff[17] * 0x00010000
-                    + buff[18] * 0x00000100
-                    + buff[19];
+  param.flashsize = buff[16] * 0x01000000 + buff[17] * 0x00010000 +
+                    buff[18] * 0x00000100 + buff[19];
 
   // AVR devices have active low reset, AT89Sx are active high
   rst_active_high = (param.devicecode >= 0xe0);
@@ -423,7 +422,7 @@ void start_pmode() {
 
   // Pulse RESET after ARDUINOISP_PIN_SCK is low:
   digitalWrite(ARDUINOISP_PIN_SCK, LOW);
-  delay(20);  // discharge ARDUINOISP_PIN_SCK, value arbitrarily chosen
+  delay(20); // discharge ARDUINOISP_PIN_SCK, value arbitrarily chosen
   reset_target(false);
   // Pulse must be minimum 2 target CPU clock cycles so 100 usec is ok for CPU
   // speeds above 20 KHz
@@ -431,7 +430,7 @@ void start_pmode() {
   reset_target(true);
 
   // Send the enable programming command:
-  delay(50);  // datasheet: must be > 20 msec
+  delay(50); // datasheet: must be > 20 msec
   spi_transaction(0xAC, 0x53, 0x00, 0x00);
   pmode = 1;
 }
@@ -455,10 +454,7 @@ void universal() {
 }
 
 void flash(uint8_t hilo, unsigned int addr, uint8_t data) {
-  spi_transaction(0x40 + 8 * hilo,
-                  addr >> 8 & 0xFF,
-                  addr & 0xFF,
-                  data);
+  spi_transaction(0x40 + 8 * hilo, addr >> 8 & 0xFF, addr & 0xFF, data);
 }
 void commit(unsigned int addr) {
   if (PROG_FLICKER) {
@@ -486,7 +482,6 @@ unsigned int current_page() {
   }
   return here;
 }
-
 
 void write_flash(int length) {
   fill(length);
@@ -574,10 +569,7 @@ void program_page() {
 }
 
 uint8_t flash_read(uint8_t hilo, unsigned int addr) {
-  return spi_transaction(0x20 + hilo * 8,
-                         (addr >> 8) & 0xFF,
-                         addr & 0xFF,
-                         0);
+  return spi_transaction(0x20 + hilo * 8, (addr >> 8) & 0xFF, addr & 0xFF, 0);
 }
 
 char flash_read_page(int length) {
@@ -640,95 +632,94 @@ void read_signature() {
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-
 ////////////////////////////////////
 ////////////////////////////////////
 void avrisp() {
   uint8_t ch = getch();
   switch (ch) {
-    case '0':  // signon
-      ISPError = 0;
-      empty_reply();
-      break;
-    case '1':
-      if (getch() == CRC_EOP) {
-        SERIAL.print((char)STK_INSYNC);
-        SERIAL.print("AVR ISP");
-        SERIAL.print((char)STK_OK);
-      } else {
-        ISPError++;
-        SERIAL.print((char)STK_NOSYNC);
-      }
-      break;
-    case 'A':
-      get_version(getch());
-      break;
-    case 'B':
-      fill(20);
-      set_parameters();
-      empty_reply();
-      break;
-    case 'E':  // extended parameters - ignore for now
-      fill(5);
-      empty_reply();
-      break;
-    case 'P':
-      if (!pmode) {
-        start_pmode();
-      }
-      empty_reply();
-      break;
-    case 'U':  // set address (word)
-      here = getch();
-      here += 256 * getch();
-      empty_reply();
-      break;
-
-    case 0x60:  //STK_PROG_FLASH
-      getch();  // low addr
-      getch();  // high addr
-      empty_reply();
-      break;
-    case 0x61:  //STK_PROG_DATA
-      getch();  // data
-      empty_reply();
-      break;
-
-    case 0x64:  //STK_PROG_PAGE
-      program_page();
-      break;
-
-    case 0x74:  //STK_READ_PAGE 't'
-      read_page();
-      break;
-
-    case 'V':  //0x56
-      universal();
-      break;
-    case 'Q':  //0x51
-      ISPError = 0;
-      end_pmode();
-      empty_reply();
-      break;
-
-    case 0x75:  //STK_READ_SIGN 'u'
-      read_signature();
-      break;
-
-    // expecting a command, not CRC_EOP
-    // this is how we can get back in sync
-    case CRC_EOP:
+  case '0': // signon
+    ISPError = 0;
+    empty_reply();
+    break;
+  case '1':
+    if (getch() == CRC_EOP) {
+      SERIAL.print((char)STK_INSYNC);
+      SERIAL.print("AVR ISP");
+      SERIAL.print((char)STK_OK);
+    } else {
       ISPError++;
       SERIAL.print((char)STK_NOSYNC);
-      break;
+    }
+    break;
+  case 'A':
+    get_version(getch());
+    break;
+  case 'B':
+    fill(20);
+    set_parameters();
+    empty_reply();
+    break;
+  case 'E': // extended parameters - ignore for now
+    fill(5);
+    empty_reply();
+    break;
+  case 'P':
+    if (!pmode) {
+      start_pmode();
+    }
+    empty_reply();
+    break;
+  case 'U': // set address (word)
+    here = getch();
+    here += 256 * getch();
+    empty_reply();
+    break;
 
-    // anything else we will return STK_UNKNOWN
-    default:
-      ISPError++;
-      if (CRC_EOP == getch()) {
-        SERIAL.print((char)STK_UNKNOWN);
-      } else {
-        SERIAL.print((char)STK_NOSYNC);
-      }
+  case 0x60: // STK_PROG_FLASH
+    getch(); // low addr
+    getch(); // high addr
+    empty_reply();
+    break;
+  case 0x61: // STK_PROG_DATA
+    getch(); // data
+    empty_reply();
+    break;
+
+  case 0x64: // STK_PROG_PAGE
+    program_page();
+    break;
+
+  case 0x74: // STK_READ_PAGE 't'
+    read_page();
+    break;
+
+  case 'V': // 0x56
+    universal();
+    break;
+  case 'Q': // 0x51
+    ISPError = 0;
+    end_pmode();
+    empty_reply();
+    break;
+
+  case 0x75: // STK_READ_SIGN 'u'
+    read_signature();
+    break;
+
+  // expecting a command, not CRC_EOP
+  // this is how we can get back in sync
+  case CRC_EOP:
+    ISPError++;
+    SERIAL.print((char)STK_NOSYNC);
+    break;
+
+  // anything else we will return STK_UNKNOWN
+  default:
+    ISPError++;
+    if (CRC_EOP == getch()) {
+      SERIAL.print((char)STK_UNKNOWN);
+    } else {
+      SERIAL.print((char)STK_NOSYNC);
+    }
   }
 }
