@@ -2,6 +2,8 @@
 
 Thinking about an adapter board to connect multiple ATtiny85s to a single programmer using off-the-shelf DIP parts.
 
+![multi_tiny](/misc/multi_tiny.jpg)
+
 _Incredibly_ work-in-progress.
 
 ## Requirements / Goals
@@ -12,6 +14,13 @@ _Incredibly_ work-in-progress.
 - Support for both manual chip and auto/digital chip selection
 - Indicators for board/chip-level statuses
 - ~Chainable
+
+## PCB TODOs
+
+- Reverse address pin switch order
+- Fix ZIF footprint. Component pins are larger than regular DIP socket
+- Unused row fixture holes are misplaced
+- Maybe rethink IO header position
 
 ## Open questions / Down the line / Considerations
 
